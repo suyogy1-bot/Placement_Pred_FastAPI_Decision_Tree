@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Placement Predictor</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #182230;
+      --muted: #667085;
+      --primary: #3157d5;
+      --primary-dark: #2444b5;
+      --border: #dce3ee;
+      --success-bg: #e8f8ef;
+      --success: #167647;
+      --danger-bg: #fff0ef;
+      --danger: #b42318;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #e8edff 0, transparent 34%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header { text-align: center; margin-bottom: 24px; }
+    .eyebrow {
+      display: inline-block;
+      color: var(--primary);
+      background: #e9edff;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 14px 0 8px; font-size: clamp(28px, 4vw, 38px); }
+    header p { color: var(--muted); margin: 0; line-height: 1.6; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(220, 227, 238, .9);
+      border-radius: 20px;
+      box-shadow: 0 16px 45px rgba(31, 47, 85, .08);
+      padding: clamp(20px, 4vw, 32px);
+    }
+
+    .section-title {
+      font-size: 16px;
+      margin: 0 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 20px;
+      margin-bottom: 28px;
+    }
+
+    .field { min-width: 0; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .hint { display: block; color: var(--muted); font-size: 12px; font-weight: 400; margin-top: 4px; }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 12px 13px;
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(49, 87, 213, .12);
+    }
+
+    .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    button {
+      border: 0;
+      border-radius: 11px;
+      padding: 13px 20px;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform .15s, background .15s;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { cursor: wait; opacity: .65; transform: none; }
+    .primary { background: var(--primary); color: white; }
+    .primary:hover { background: var(--primary-dark); }
+    .secondary { background: #eef1f7; color: #344054; }
+
+    .result {
+      display: none;
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 14px;
+      line-height: 1.5;
+    }
+    .result.show { display: block; }
+    .result.placed { background: var(--success-bg); color: var(--success); }
+    .result.not-placed { background: var(--danger-bg); color: var(--danger); }
+    .result.error { background: #fff7e6; color: #8a4b08; }
+    .result strong { display: block; font-size: 19px; margin-bottom: 4px; }
+    .footer-note { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 18px 0 0; }
+
+    @media (max-width: 620px) {
+      body { padding: 22px 12px; }
+      .grid { grid-template-columns: 1fr; gap: 15px; }
+      .actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <span class="eyebrow">Machine Learning Demo</span>
+      <h1>Student Placement Predictor</h1>
+      <p>Enter the student's details to get a prediction from your placement model.</p>
+    </header>
+
+    <section class="card">
+      <form id="predictionForm">
+        <h2 class="section-title">Student information</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender" required>
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="branch">Branch</label>
+            <select id="branch" name="branch" required>
+              <option value="">Select branch</option>
+              <option value="CIVIL">Civil</option>
+              <option value="COMMERCE">Commerce</option>
+              <option value="CSE">CSE</option>
+              <option value="ECE">ECE</option>
+              <option value="IT">IT</option>
+              <option value="MECHANICAL">Mechanical</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="study_hours">Study hours per day</label>
+            <input id="study_hours" name="study_hours" type="number" min="0" max="24" step="0.1" placeholder="e.g. 4.5" required />
+          </div>
+
+          <div class="field">
+            <label for="attendance">Attendance (%)</label>
+            <input id="attendance" name="attendance" type="number" min="0" max="100" step="0.1" placeholder="e.g. 85" required />
+          </div>
+
+          <div class="field">
+            <label for="sleep_hours">Sleep hours per day</label>
+            <input id="sleep_hours" name="sleep_hours" type="number" min="0" max="24" step="0.1" placeholder="e.g. 7" required />
+          </div>
+
+          <div class="field">
+            <label for="internet_usage">Internet usage (hours per day)</label>
+            <input id="internet_usage" name="internet_usage" type="number" min="0" max="24" step="0.1" placeholder="e.g. 3" required />
+          </div>
+
+          <div class="field">
+            <label for="assignments_completed">Assignments completed</label>
+            <input id="assignments_completed" name="assignments_completed" type="number" min="0" step="1" placeholder="e.g. 8" required />
+          </div>
+
+          <div class="field">
+            <label for="previous_score">Previous score</label>
+            <input id="previous_score" name="previous_score" type="number" min="0" max="100" step="0.1" placeholder="e.g. 78" required />
+          </div>
+
+          <div class="field">
+            <label for="extracurricular">Extracurricular activities</label>
+            <select id="extracurricular" name="extracurricular" required>
+              <option value="">Select an option</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="exam_score">Exam score</label>
+            <input id="exam_score" name="exam_score" type="number" min="0" max="100" step="0.1" placeholder="e.g. 82" required />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="predictButton" type="submit">Predict placement</button>
+          <button class="secondary" type="reset">Clear form</button>
+        </div>
+      </form>
+
+      <div id="result" class="result" role="status" aria-live="polite"></div>
+      <p class="footer-note">
+        This page sends the entered values to your FastAPI <code>/predict</code> endpoint.
+        The API and trained model must be running for predictions to work.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    // Change this URL if your FastAPI server runs somewhere else.
+    const API_URL = "http://127.0.0.1:8000/predict";
+
+    const form = document.getElementById("predictionForm");
+    const resultBox = document.getElementById("result");
+    const predictButton = document.getElementById("predictButton");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(form);
+      const payload = {
+        gender: formData.get("gender"),
+        branch: formData.get("branch"),
+        study_hours: Number(formData.get("study_hours")),
+        attendance: Number(formData.get("attendance")),
+        sleep_hours: Number(formData.get("sleep_hours")),
+        internet_usage: Number(formData.get("internet_usage")),
+        assignments_completed: Number(formData.get("assignments_completed")),
+        previous_score: Number(formData.get("previous_score")),
+        extracurricular: formData.get("extracurricular"),
+        exam_score: Number(formData.get("exam_score"))
+      };
+
+      resultBox.className = "result show";
+      resultBox.textContent = "Getting prediction…";
+      predictButton.disabled = true;
+      predictButton.textContent = "Predicting…";
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail ? JSON.stringify(data.detail) : "The API returned an error.");
+        }
+
+        if (data.prediction === "Placed") {
+          resultBox.className = "result show placed";
+          resultBox.innerHTML = "<strong>Prediction: Placed</strong>The model predicts that this student will be placed.";
+        } else if (data.prediction === "Not Placed") {
+          resultBox.className = "result show not-placed";
+          resultBox.innerHTML = "<strong>Prediction: Not Placed</strong>The model predicts that this student will not be placed.";
+        } else {
+          resultBox.className = "result show";
+          resultBox.textContent = "API response: " + JSON.stringify(data);
+        }
+      } catch (error) {
+        resultBox.className = "result show error";
+        resultBox.innerHTML = "<strong>Could not get prediction</strong>" +
+          escapeHtml(error.message) +
+          "<br><br>Check that FastAPI is running at " + escapeHtml(API_URL) +
+          " and that CORS is enabled if this page is served from a different origin.";
+      } finally {
+        predictButton.disabled = false;
+        predictButton.textContent = "Predict placement";
+      }
+    });
+
+    form.addEventListener("reset", () => {
+      resultBox.className = "result";
+      resultBox.textContent = "";
+    });
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[char]));
+    }
+  </script>
+</body>
+</html>
