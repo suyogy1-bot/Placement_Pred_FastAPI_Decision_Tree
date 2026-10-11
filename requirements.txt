@@ -2,3 +2,5 @@ streamlit>=1.40
 pandas
 joblib
 scikit-learn
+fastapi
+uvicorn[standard]
