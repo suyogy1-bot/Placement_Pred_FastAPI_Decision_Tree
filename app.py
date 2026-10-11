@@ -2,8 +2,19 @@ import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
+from fastapi import FastAPI, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+import os
 
 app = FastAPI()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "template"))
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("placement_predictor.html", {"request": request})
 
 model = joblib.load("placement_model.joblib")
 columns = joblib.load("columns.joblib")
@@ -20,13 +31,6 @@ class StudentData(BaseModel):
     previous_score: float
     extracurricular: str
     exam_score: float
-
-
-from fastapi.responses import FileResponse
-@app.get("/")
-def home():
-    return FileResponse("/Users/suyogyadav/Downloads/Placement_Pred_FastAPI_Decision_Tree/template/placement_predictor.html")
-
 
 
 @app.post("/predict")
